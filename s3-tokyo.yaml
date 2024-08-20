@@ -4,6 +4,8 @@ Resources:
         Type: AWS::S3::Bucket
         Properties:
             BucketName: !Sub "${AWS::AccountId}-crrlab-ap-northeast-1"
+            VersioningConfiguration:
+                Status: Enabled
 
     S3ReplicationRoleSeoul:
         Type: AWS::IAM::Role
