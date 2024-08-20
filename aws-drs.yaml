@@ -1,0 +1,127 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+    DR_VPC:
+        Type: "AWS::EC2::VPC"
+        Properties:
+            CidrBlock: "172.31.0.0/16"
+            EnableDnsSupport: "true"
+            EnableDnsHostnames: "true"
+            Tags:
+                - Key: Name
+                  Value: DR_VPC
+            InstanceTenancy: default
+            NatGateways: 2
+            SubnetConfigurations:
+                - CidrBlock: !Sub "172.31.0.0/26"
+                  MapPublicIpOnLaunch: "true"
+                  AvailabilityZone: "ap-northeast-2a"
+                  Tags:
+                      - Key: Name
+                        Value: public-subnet
+                  SubnetType: PUBLIC
+                - CidrBlock: !Sub "172.31.64.0/26"
+                  AvailabilityZone: "ap-northeast-2a"
+                  Tags:
+                      - Key: Name
+                        Value: private-subnet
+                  SubnetType: PRIVATE_WITH_NAT
+                - CidrBlock: !Sub "172.31.128.0/26"
+                  AvailabilityZone: "ap-northeast-2a"
+                  Tags:
+                      - Key: Name
+                        Value: private-subnet-trgw
+                  SubnetType: PRIVATE_ISOLATED
+
+    DBServer:
+        Type: "AWS::EC2::Instance"
+        Properties:
+            InstanceType: "c5.large"
+            ImageId: !Ref "AmazonLinux2023"
+            SubnetId: !Ref "PrivateSubnetA"
+            UserData:
+                Fn::Base64: |
+                    #!/bin/bash
+                    # Add your db.sh script contents here.
+            Tags:
+                - Key: Name
+                  Value: DBServer
+
+    WASServer:
+        Type: "AWS::EC2::Instance"
+        Properties:
+            InstanceType: "c5.large"
+            ImageId: !Ref "AmazonLinux2023"
+            SubnetId: !Ref "PrivateSubnetA"
+            UserData:
+                Fn::Base64: |
+                    #!/bin/bash
+                    sudo yum install -y git
+                    git clone https://github.com/simjh0919/DRWas-AWS.git /home/ec2-user/bank-was
+                    pwd
+                    python3 -m pip install -r /home/ec2-user/bank-was/requirements.txt
+                    python3 /home/ec2-user/bank-was/runCheck.py ${DBServer.PrivateIpAddress}
+            Tags:
+                - Key: Name
+                  Value: WASServer
+
+    WebServer:
+        Type: "AWS::EC2::Instance"
+        Properties:
+            InstanceType: "c5.large"
+            ImageId: !Ref "AmazonLinux2023"
+            SubnetId: !Ref "PublicSubnetA"
+            UserData:
+                Fn::Base64: |
+                    #!/bin/bash
+                    sudo yum update -y
+                    sudo amazon-linux-extras install nginx1
+                    sudo yum install -y git
+                    git clone https://github.com/simjh0919/DRWeb-AWS.git /home/ec2-user/web
+                    /home/ec2-user/web/start.sh ${WASServer.PrivateIpAddress}
+            Tags:
+                - Key: Name
+                  Value: WebServer
+
+    SecurityGroup:
+        Type: "AWS::EC2::SecurityGroup"
+        Properties:
+            GroupDescription: "Allow traffic"
+            SecurityGroupIngress:
+                - IpProtocol: tcp
+                  FromPort: 80
+                  ToPort: 80
+                  CidrIp: "0.0.0.0/0"
+                - IpProtocol: tcp
+                  FromPort: 22
+                  ToPort: 22
+                  CidrIp: "0.0.0.0/0"
+            VpcId: !Ref DR_VPC
+
+    AmazonLinux2023:
+        Type: "AWS::EC2::Image"
+        Properties:
+            Name: "amzn2-ami-hvm-*-x86_64-gp2"
+            Owners:
+                - "amazon"
+
+    PrivateSubnetA:
+        Type: "AWS::EC2::Subnet"
+        Properties:
+            CidrBlock: "172.31.64.0/26"
+            VpcId: !Ref DR_VPC
+            AvailabilityZone: "ap-northeast-2a"
+            MapPublicIpOnLaunch: false
+            Tags:
+                - Key: Name
+                  Value: PrivateSubnetA
+
+    PublicSubnetA:
+        Type: "AWS::EC2::Subnet"
+        Properties:
+            CidrBlock: "172.31.0.0/26"
+            VpcId: !Ref DR_VPC
+            AvailabilityZone: "ap-northeast-2a"
+            MapPublicIpOnLaunch: true
+            Tags:
+                - Key: Name
+                  Value: PublicSubnetA
