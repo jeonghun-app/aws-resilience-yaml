@@ -10,27 +10,39 @@ Resources:
                 - Key: Name
                   Value: DRVPC
             InstanceTenancy: default
-            NatGateways: 2
-            SubnetConfigurations:
-                - CidrBlock: !Sub "172.31.0.0/26"
-                  MapPublicIpOnLaunch: "true"
-                  AvailabilityZone: "ap-northeast-2a"
-                  Tags:
-                      - Key: Name
-                        Value: public-subnet
-                  SubnetType: PUBLIC
-                - CidrBlock: !Sub "172.31.64.0/26"
-                  AvailabilityZone: "ap-northeast-2a"
-                  Tags:
-                      - Key: Name
-                        Value: private-subnet
-                  SubnetType: PRIVATE_WITH_NAT
-                - CidrBlock: !Sub "172.31.128.0/26"
-                  AvailabilityZone: "ap-northeast-2a"
-                  Tags:
-                      - Key: Name
-                        Value: private-subnet-trgw
-                  SubnetType: PRIVATE_ISOLATED
+
+    PublicSubnetA:
+        Type: "AWS::EC2::Subnet"
+        Properties:
+            CidrBlock: "172.31.0.0/26"
+            VpcId: !Ref DRVPC
+            AvailabilityZone: "ap-northeast-2a"
+            MapPublicIpOnLaunch: true
+            Tags:
+                - Key: Name
+                  Value: PublicSubnetA
+
+    PrivateSubnetA:
+        Type: "AWS::EC2::Subnet"
+        Properties:
+            CidrBlock: "172.31.64.0/26"
+            VpcId: !Ref DRVPC
+            AvailabilityZone: "ap-northeast-2a"
+            MapPublicIpOnLaunch: false
+            Tags:
+                - Key: Name
+                  Value: PrivateSubnetA
+
+    PrivateSubnetTRGW:
+        Type: "AWS::EC2::Subnet"
+        Properties:
+            CidrBlock: "172.31.128.0/26"
+            VpcId: !Ref DRVPC
+            AvailabilityZone: "ap-northeast-2a"
+            MapPublicIpOnLaunch: false
+            Tags:
+                - Key: Name
+                  Value: PrivateSubnetTRGW
 
     WebServer:
         Type: "AWS::EC2::Instance"
@@ -66,30 +78,5 @@ Resources:
             VpcId: !Ref DRVPC
 
     AmazonLinux2023:
-        Type: "AWS::EC2::Image"
-        Properties:
-            Name: "amzn2-ami-hvm-*-x86_64-gp2"
-            Owners:
-                - "amazon"
-
-    PrivateSubnetA:
-        Type: "AWS::EC2::Subnet"
-        Properties:
-            CidrBlock: "172.31.64.0/26"
-            VpcId: !Ref DRVPC
-            AvailabilityZone: "ap-northeast-2a"
-            MapPublicIpOnLaunch: false
-            Tags:
-                - Key: Name
-                  Value: PrivateSubnetA
-
-    PublicSubnetA:
-        Type: "AWS::EC2::Subnet"
-        Properties:
-            CidrBlock: "172.31.0.0/26"
-            VpcId: !Ref DRVPC
-            AvailabilityZone: "ap-northeast-2a"
-            MapPublicIpOnLaunch: true
-            Tags:
-                - Key: Name
-                  Value: PublicSubnetA
+        Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
+        Default: "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
