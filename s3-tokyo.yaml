@@ -3,12 +3,12 @@ Resources:
     SeoulS3Bucket:
         Type: AWS::S3::Bucket
         Properties:
-            BucketName: !Sub "${AWS::AccountId}-crrlab-ap-northeast-2"
+            BucketName: !Sub "${AWS::AccountId}-crrlab-ap-northeast-1"
 
     S3ReplicationRoleSeoul:
         Type: AWS::IAM::Role
         Properties:
-            RoleName: !Sub "${AWS::AccountId}-S3-Replication-Role-ap-northeast-2"
+            RoleName: !Sub "${AWS::AccountId}-S3-Replication-Role-ap-northeast-1"
             AssumeRolePolicyDocument:
                 Version: "2012-10-17"
                 Statement:
