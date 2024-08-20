@@ -10,6 +10,40 @@ Resources:
                   Value: DRVPC
             InstanceTenancy: default
 
+    InternetGateway:
+        Type: "AWS::EC2::InternetGateway"
+        Properties:
+            Tags:
+                - Key: Name
+                  Value: DRInternetGateway
+
+    AttachGateway:
+        Type: "AWS::EC2::VPCGatewayAttachment"
+        Properties:
+            VpcId: !Ref DRVPC
+            InternetGatewayId: !Ref InternetGateway
+
+    PublicRouteTable:
+        Type: "AWS::EC2::RouteTable"
+        Properties:
+            VpcId: !Ref DRVPC
+            Tags:
+                - Key: Name
+                  Value: PublicRouteTable
+
+    PublicRoute:
+        Type: "AWS::EC2::Route"
+        Properties:
+            RouteTableId: !Ref PublicRouteTable
+            DestinationCidrBlock: "0.0.0.0/0"
+            GatewayId: !Ref InternetGateway
+
+    PublicSubnetARouteTableAssociation:
+        Type: "AWS::EC2::SubnetRouteTableAssociation"
+        Properties:
+            SubnetId: !Ref PublicSubnetA
+            RouteTableId: !Ref PublicRouteTable
+
     PublicSubnetA:
         Type: "AWS::EC2::Subnet"
         Properties:
@@ -38,10 +72,6 @@ Resources:
             CidrBlock: "172.31.128.0/26"
             VpcId: !Ref DRVPC
             AvailabilityZone: "ap-northeast-2a"
-            MapPublicIpOnLaunch: false
-            Tags:
-                - Key: Name
-                  Value: PrivateSubnetTRGW
 
     WebServer:
         Type: "AWS::EC2::Instance"
