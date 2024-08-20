@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Resources:
-    DR_VPC:
+    DRVPC:
         Type: "AWS::EC2::VPC"
         Properties:
             CidrBlock: "172.31.0.0/16"
@@ -8,7 +8,7 @@ Resources:
             EnableDnsHostnames: "true"
             Tags:
                 - Key: Name
-                  Value: DR_VPC
+                  Value: DRVPC
             InstanceTenancy: default
             NatGateways: 2
             SubnetConfigurations:
@@ -63,7 +63,7 @@ Resources:
                   FromPort: 22
                   ToPort: 22
                   CidrIp: "0.0.0.0/0"
-            VpcId: !Ref DR_VPC
+            VpcId: !Ref DRVPC
 
     AmazonLinux2023:
         Type: "AWS::EC2::Image"
@@ -76,7 +76,7 @@ Resources:
         Type: "AWS::EC2::Subnet"
         Properties:
             CidrBlock: "172.31.64.0/26"
-            VpcId: !Ref DR_VPC
+            VpcId: !Ref DRVPC
             AvailabilityZone: "ap-northeast-2a"
             MapPublicIpOnLaunch: false
             Tags:
@@ -87,7 +87,7 @@ Resources:
         Type: "AWS::EC2::Subnet"
         Properties:
             CidrBlock: "172.31.0.0/26"
-            VpcId: !Ref DR_VPC
+            VpcId: !Ref DRVPC
             AvailabilityZone: "ap-northeast-2a"
             MapPublicIpOnLaunch: true
             Tags:
