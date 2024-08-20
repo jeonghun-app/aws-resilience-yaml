@@ -32,38 +32,6 @@ Resources:
                         Value: private-subnet-trgw
                   SubnetType: PRIVATE_ISOLATED
 
-    DBServer:
-        Type: "AWS::EC2::Instance"
-        Properties:
-            InstanceType: "c5.large"
-            ImageId: !Ref "AmazonLinux2023"
-            SubnetId: !Ref "PrivateSubnetA"
-            UserData:
-                Fn::Base64: |
-                    #!/bin/bash
-                    # Add your db.sh script contents here.
-            Tags:
-                - Key: Name
-                  Value: DBServer
-
-    WASServer:
-        Type: "AWS::EC2::Instance"
-        Properties:
-            InstanceType: "c5.large"
-            ImageId: !Ref "AmazonLinux2023"
-            SubnetId: !Ref "PrivateSubnetA"
-            UserData:
-                Fn::Base64: |
-                    #!/bin/bash
-                    sudo yum install -y git
-                    git clone https://github.com/simjh0919/DRWas-AWS.git /home/ec2-user/bank-was
-                    pwd
-                    python3 -m pip install -r /home/ec2-user/bank-was/requirements.txt
-                    python3 /home/ec2-user/bank-was/runCheck.py ${DBServer.PrivateIpAddress}
-            Tags:
-                - Key: Name
-                  Value: WASServer
-
     WebServer:
         Type: "AWS::EC2::Instance"
         Properties:
