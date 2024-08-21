@@ -94,7 +94,7 @@ Resources:
                     sudo systemctl enable nginx
                     sudo systemctl start nginx
                     git clone https://github.com/simjh0919/DRWeb-AWS.git /home/ec2-user/web
-                    /home/ec2-user/web/start.sh ${WASServer_PrivateIpAddress}
+                    /home/ec2-user/web/start.sh 127.0.0.8
             Tags:
                 - Key: Name
                   Value: WebServer
