@@ -72,6 +72,10 @@ Resources:
             CidrBlock: "172.31.128.0/26"
             VpcId: !Ref DRVPC
             AvailabilityZone: "ap-northeast-2a"
+            MapPublicIpOnLaunch: false
+            Tags:
+                - Key: Name
+                  Value: PrivateSubnetTRGW
 
     WebServer:
         Type: "AWS::EC2::Instance"
@@ -90,7 +94,7 @@ Resources:
                     sudo systemctl enable nginx
                     sudo systemctl start nginx
                     git clone https://github.com/simjh0919/DRWeb-AWS.git /home/ec2-user/web
-                    /home/ec2-user/web/start.sh ${WASServer.PrivateIpAddress}
+                    /home/ec2-user/web/start.sh ${WASServer_PrivateIpAddress}
             Tags:
                 - Key: Name
                   Value: WebServer
@@ -158,4 +162,4 @@ Resources:
 Parameters:
     AmazonLinuxAMI:
         Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
-        Default: "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+        Default: "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64"
